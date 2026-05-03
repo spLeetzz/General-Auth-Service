@@ -1,0 +1,19 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/dashboard",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/dashboard(.*)",
+      "destination": "/dashboard$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "http://YOUR_VPS_IP:3000/$1"
+    }
+  ]
+}
