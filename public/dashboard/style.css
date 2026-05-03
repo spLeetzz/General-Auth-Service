@@ -4,29 +4,29 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root {
-  --bg:        #0b0f19;
-  --surface:   #131a2b;
-  --elevated:  #1a2340;
-  --border:    #2a324a;
-  --border-focus: #4f8cff;
-  --text:      #e8ecf1;
-  --text-dim:  #94a3b8;
-  --text-muted:#64748b;
-  --accent:    #4f8cff;
-  --accent-hover:#3b75e0;
-  --danger:    #ef4444;
-  --danger-bg: #3b0b0b;
-  --danger-text:#ffb3b3;
-  --success:   #34d399;
-  --success-bg:#062e16;
-  --success-text:#a7f3d0;
-  --warn:      #f59e0b;
-  --warn-bg:   #451a03;
-  --warn-text: #fde68a;
-  --radius:    10px;
-  --radius-sm: 6px;
+  --bg:        hsl(222.2, 84%, 4.9%);
+  --surface:   hsl(222.2, 84%, 4.9%);
+  --elevated:  hsl(217.2, 32.6%, 17.5%);
+  --border:    hsl(217.2, 32.6%, 17.5%);
+  --border-focus: hsl(210, 40%, 98%);
+  --text:      hsl(210, 40%, 98%);
+  --text-dim:  hsl(215, 20.2%, 65.1%);
+  --text-muted:hsl(215, 20.2%, 65.1%);
+  --accent:    hsl(210, 40%, 98%);
+  --accent-hover:hsl(210, 40%, 90%);
+  --danger:    hsl(0, 62.8%, 50.6%);
+  --danger-bg: rgba(127, 29, 29, 0.2);
+  --danger-text:hsl(0, 84.2%, 60.2%);
+  --success:   hsl(142.1, 76.2%, 36.3%);
+  --success-bg:rgba(20, 83, 45, 0.2);
+  --success-text:hsl(142.1, 76.2%, 56.3%);
+  --warn:      hsl(38, 92%, 50%);
+  --warn-bg:   rgba(120, 53, 15, 0.2);
+  --warn-text: hsl(48, 96%, 89%);
+  --radius:    0.5rem;
+  --radius-sm: 0.375rem;
   --sidebar-w: 260px;
-  --transition: .2s ease;
+  --transition: .15s ease-in-out;
 }
 
 html { font-size: 15px; }
@@ -83,7 +83,7 @@ body {
 .sidebar-nav a:hover { background: var(--elevated); color: var(--text); }
 .sidebar-nav a:hover svg { opacity: 1; }
 .sidebar-nav a.active {
-  background: rgba(79,140,255,.12);
+  background: var(--elevated);
   color: var(--accent);
 }
 .sidebar-nav a.active svg { opacity: 1; }
@@ -162,7 +162,7 @@ body {
   margin-bottom: 1.25rem;
   transition: border-color var(--transition);
 }
-.card:hover { border-color: #3a4466; }
+.card:hover { border-color: var(--text-dim); }
 .card-title {
   font-size: .95rem;
   font-weight: 600;
@@ -198,7 +198,7 @@ body {
 .field input:focus, .field select:focus {
   outline: none;
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(79,140,255,.15);
+  box-shadow: 0 0 0 1px var(--border-focus);
 }
 .field input:disabled {
   opacity: .5;
@@ -232,16 +232,16 @@ body {
 .btn svg { width: 16px; height: 16px; }
 .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: hsl(222.2 47.4% 11.2%); /* dark foreground for primary button */
 }
 .btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
 .btn-primary:active { transform: translateY(0); }
 .btn-secondary {
-  background: var(--elevated);
+  background: transparent;
   color: var(--text);
   border: 1px solid var(--border);
 }
-.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-secondary:hover { background: var(--elevated); }
 .btn-danger {
   background: transparent;
   color: var(--danger);

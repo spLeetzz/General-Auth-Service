@@ -41,5 +41,5 @@
     "moduleDetection": "force",
     "skipLibCheck": true
   },
-  "exclude": ["drizzle.config.ts", "drizzle", "dist"]
+  "exclude": ["drizzle.config.ts", "drizzle", "dist", "sdk"]
 }

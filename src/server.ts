@@ -24,6 +24,7 @@ app.use(
 app.set("trust proxy", true);
 
 // --- Static landing page ---
+app.get("/", (req, res) => res.redirect("/dashboard"));
 app.use(express.static("public"));
 
 app.get("/health", (_req, res) => res.json({ ok: true }));

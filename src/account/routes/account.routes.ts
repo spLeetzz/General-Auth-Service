@@ -4,7 +4,7 @@ import * as accountController from "../controller/account.controller.js";
 
 const router = Router();
 
-router.use(requireAuth);
+router.use("/api/me", requireAuth);
 
 router.get("/api/me", accountController.getMe);
 router.patch("/api/me/email", accountController.updateEmail);

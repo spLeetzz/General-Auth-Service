@@ -19,13 +19,8 @@ function getGoogleConfig(req: Request) {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) return null;
 
-  let redirectUri = process.env.GOOGLE_REDIRECT_URI;
-  if (!redirectUri) {
-    const proto =
-      (req.headers["x-forwarded-proto"] as string | undefined) ?? req.protocol;
-    const host = req.get("host");
-    redirectUri = `${proto}://${host}/authorize/google/callback`;
-  }
+  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+  if (!clientId || !clientSecret || !redirectUri) return null;
 
   return { clientId, clientSecret, redirectUri };
 }

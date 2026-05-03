@@ -12,6 +12,10 @@ router.post("/authorize/logout", authController.logout);
 
 // Google SSO
 router.get("/authorize/google", googleController.googleRedirect);
-router.get("/authorize/google/callback", googleController.googleCallback);
+if (!process.env.GOOGLE_REDIRECT_URI) {
+  throw new Error("GOOGLE_REDIRECT_URI environment variable is required for Google SSO.");
+}
+const googleCallbackPath = new URL(process.env.GOOGLE_REDIRECT_URI).pathname;
 
+router.get(googleCallbackPath, googleController.googleCallback);
 export default router;
