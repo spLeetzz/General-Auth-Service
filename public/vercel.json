@@ -1,3 +1,0 @@
-{
-  "rewrites": [{ "source": "/(.*)", "destination": "http://@VPS_HOST/$1" }]
-}
