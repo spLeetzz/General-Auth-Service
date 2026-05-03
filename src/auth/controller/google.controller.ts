@@ -39,11 +39,13 @@ export async function googleRedirect(
   next: NextFunction,
 ) {
   try {
+    console.log("hi");
     const config = getGoogleConfig(req);
     if (!config) {
       res.redirect(302, "/authorize/login?error=Google+SSO+is+not+configured");
       return;
     }
+    console.log("redirect_uri being sent:", config.redirectUri, config);
 
     // Store a state param in session to prevent CSRF
     const state = randomBytes(16).toString("hex");
