@@ -58,6 +58,7 @@ export async function googleRedirect(
       access_type: "online",
       prompt: "select_account",
     });
+    console.log("redirect_uri being sent:", config.redirectUri, config);
 
     res.redirect(302, `${GOOGLE_AUTH_URL}?${params.toString()}`);
   } catch (error) {
