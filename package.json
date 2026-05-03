@@ -1,0 +1,37 @@
+{
+  "type": "module",
+  "main": "./dist/main.js",
+  "scripts": {
+    "start": "node dist/main",
+    "build": "npx tsc -p .",
+    "dev": "npx tsc-watch --onSuccess \"node dist/main.js\"",
+    "studio": "npx drizzle-kit studio",
+    "seed": "npx tsx src/db/seed.ts",
+    "rotate-keys": "node scripts/rotate-keys.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "connect-pg-simple": "^10.0.0",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "jose": "^6.1.0",
+    "pg": "^8.20.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/connect-pg-simple": "^7.0.3",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "@types/express-session": "^1.19.0",
+    "@types/node": "^25.6.0",
+    "@types/pg": "^8.20.0",
+    "@types/supertest": "^7.2.0",
+    "drizzle-kit": "^0.31.10",
+    "supertest": "^7.2.2",
+    "tsc-watch": "^7.2.0",
+    "typescript": "^6.0.3"
+  }
+}
