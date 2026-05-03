@@ -38,14 +38,13 @@ export async function googleRedirect(
   res: Response,
   next: NextFunction,
 ) {
+  console.log(req, req.headers, req.body);
   try {
-    console.log("hi");
     const config = getGoogleConfig(req);
     if (!config) {
       res.redirect(302, "/authorize/login?error=Google+SSO+is+not+configured");
       return;
     }
-    console.log("redirect_uri being sent:", config.redirectUri, config);
 
     // Store a state param in session to prevent CSRF
     const state = randomBytes(16).toString("hex");
@@ -60,7 +59,6 @@ export async function googleRedirect(
       access_type: "online",
       prompt: "select_account",
     });
-    console.log("redirect_uri being sent:", config.redirectUri, config);
 
     res.redirect(302, `${GOOGLE_AUTH_URL}?${params.toString()}`);
   } catch (error) {
