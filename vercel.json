@@ -1,15 +1,3 @@
 {
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/dashboard",
-      "permanent": true
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "http://@VPS_HOST/$1"
-    }
-  ]
+  "rewrites": [{ "source": "/(.*)", "destination": "http://@VPS_HOST/$1" }]
 }
