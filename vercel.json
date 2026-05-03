@@ -8,12 +8,8 @@
   ],
   "rewrites": [
     {
-      "source": "/dashboard(.*)",
-      "destination": "/dashboard$1"
-    },
-    {
       "source": "/(.*)",
-      "destination": "http://YOUR_VPS_IP:3000/$1"
+      "destination": "http://@VPS_HOST/$1"
     }
   ]
 }
