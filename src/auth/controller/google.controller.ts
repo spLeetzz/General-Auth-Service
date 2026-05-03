@@ -44,6 +44,7 @@ export async function googleRedirect(
       res.redirect(302, "/authorize/login?error=Google+SSO+is+not+configured");
       return;
     }
+    console.log(config, process.env);
 
     // Store a state param in session to prevent CSRF
     const state = randomBytes(16).toString("hex");
