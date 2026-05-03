@@ -38,7 +38,6 @@ export async function googleRedirect(
   res: Response,
   next: NextFunction,
 ) {
-  console.log(req, req.headers, req.body);
   try {
     const config = getGoogleConfig(req);
     if (!config) {
