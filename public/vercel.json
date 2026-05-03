@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "http://66.116.226.48.nip.io:3000/$1" }
+  ]
+}
