@@ -16,6 +16,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
+app.set("trust proxy", 1); // only for vercel
 app.use(session(sessionOptions));
 app.use(
   ["/authorize/login", "/authorize/signup", "/token", "/refresh"],
