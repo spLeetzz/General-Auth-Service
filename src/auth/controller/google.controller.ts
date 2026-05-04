@@ -2,13 +2,9 @@ import type { NextFunction, Request, Response } from "express";
 import { randomBytes, createHash } from "node:crypto";
 import { eq, and } from "drizzle-orm";
 import { db } from "../../db/db.js";
-import { users, ssoAccounts } from "../../db/schema.js";
+import { users, ssoAccounts, oauthStates } from "../../db/schema.js";
 import ApiError from "../../utility/api.error.js";
-import {
-  clearOAuthResumeCookie,
-  normalizeResumePath,
-  OAUTH_RESUME_COOKIE,
-} from "../../oauth/oauthResumeCookie.js";
+import { signAccessToken } from "../../keys/jwt.service.js";
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -25,15 +21,8 @@ function getGoogleConfig(req: Request) {
   return { clientId, clientSecret, redirectUri };
 }
 
-function redirectAfterAuth(req: Request, res: Response): void {
-  const resume = normalizeResumePath(req.cookies[OAUTH_RESUME_COOKIE]);
-  const target = resume ?? "/dashboard/";
-  clearOAuthResumeCookie(res);
-  res.redirect(302, target);
-}
-
-/** GET /authorize/google _ redirect user to Google consent screen */
-export async function googleRedirect(
+/** GET /authorize/google/init _ generates state, saves to DB, returns Google auth URL */
+export async function googleInit(
   req: Request,
   res: Response,
   next: NextFunction,
@@ -45,7 +34,13 @@ export async function googleRedirect(
       return;
     }
     const state = randomBytes(16).toString("hex");
-    req.session.googleState = state;
+
+    await db.insert(oauthStates).values({
+      state,
+      createdAt: Date.now(),
+      expiresAt: Date.now() + 10 * 60 * 1000,
+    });
+
     const params = new URLSearchParams({
       client_id: config.clientId,
       redirect_uri: config.redirectUri,
@@ -55,37 +50,38 @@ export async function googleRedirect(
       access_type: "online",
       prompt: "select_account",
     });
-    req.session.save((err) => {
-      if (err) {
-        console.error("session save error:", err);
-        return next(err);
-      }
-      console.log("session saved, state:", state);
-      res.redirect(302, `${GOOGLE_AUTH_URL}?${params.toString()}`);
-    });
+
+    res.json({ url: `${GOOGLE_AUTH_URL}?${params.toString()}` });
   } catch (error) {
     next(error);
   }
 }
 
-/** GET /authorize/google/callback _ exchange code, upsert user, create session */
-export async function googleCallback(
+/** GET /authorize/google/exchange _ exchange code, upsert user, issue JWT */
+export async function googleExchange(
   req: Request,
   res: Response,
   next: NextFunction,
 ) {
   try {
-    console.log("cookies received:", req.headers.cookie);
-    console.log("callback session:", req.session.googleState, req.sessionID);
     const code = req.query.code;
     const state = req.query.state;
     if (typeof code !== "string" || typeof state !== "string") {
       throw ApiError.badRequest("Missing code or state");
     }
-    if (state !== req.session.googleState) {
-      throw ApiError.badRequest("Invalid state parameter");
+
+    // Verify state from DB
+    const [row] = await db
+      .select()
+      .from(oauthStates)
+      .where(eq(oauthStates.state, state));
+
+    if (!row || row.expiresAt < Date.now()) {
+      throw ApiError.badRequest("Invalid or expired state");
     }
-    delete req.session.googleState;
+
+    // Consume state immediately
+    await db.delete(oauthStates).where(eq(oauthStates.state, state));
 
     const config = getGoogleConfig(req);
     if (!config) {
@@ -185,13 +181,18 @@ export async function googleCallback(
       }
     }
 
-    // 4. Create session
-    req.session.regenerate((err) => {
-      if (err) return next(ApiError.internal("Failed to start session"));
-      req.session.userId = userId;
-      console.log("saved sessionID:", req.sessionID, "state:", state);
-      redirectAfterAuth(req, res);
-    });
+    // 4. Issue JWT instead of session
+    const token = await signAccessToken(
+      { sub: userId },
+      {
+        issuer: "urn:auth-service",
+        audience: "urn:client",
+        expiresInSec: 14 * 24 * 60 * 60, // 14 days
+      }
+    );
+
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    res.redirect(`${frontendUrl}/auth/success?token=${token}`);
   } catch (error) {
     next(error);
   }

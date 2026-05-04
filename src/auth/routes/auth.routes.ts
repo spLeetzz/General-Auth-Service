@@ -11,11 +11,18 @@ router.post("/authorize/signup", authController.signup);
 router.post("/authorize/logout", authController.logout);
 
 // Google SSO
-router.get("/authorize/google", googleController.googleRedirect);
-if (!process.env.GOOGLE_REDIRECT_URI) {
-  throw new Error("GOOGLE_REDIRECT_URI environment variable is required for Google SSO.");
-}
-const googleCallbackPath = new URL(process.env.GOOGLE_REDIRECT_URI).pathname;
+router.get("/authorize/google/init", googleController.googleInit);
+router.get("/authorize/google/exchange", googleController.googleExchange);
 
-router.get(googleCallbackPath, googleController.googleCallback);
+if (process.env.GOOGLE_REDIRECT_URI) {
+  const googleCallbackPath = new URL(process.env.GOOGLE_REDIRECT_URI).pathname;
+  // Map the callback path directly to exchange so local testing works
+  router.get(googleCallbackPath, googleController.googleExchange);
+}
+
+import { renderSuccessPage } from "../views/auth-page.service.js";
+router.get("/auth/success", (req, res) => {
+  res.type("html").send(renderSuccessPage());
+});
+
 export default router;

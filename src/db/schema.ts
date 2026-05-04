@@ -1,4 +1,4 @@
-import { pgTable, unique, uuid, text, boolean, timestamp, index, foreignKey, varchar, json } from "drizzle-orm/pg-core"
+import { pgTable, unique, uuid, text, boolean, timestamp, index, foreignKey, varchar, json, bigint } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 
 
@@ -16,6 +16,12 @@ export const users = pgTable("users", {
 }, (table) => [
 	unique("users_email_key").on(table.email),
 ]);
+
+export const oauthStates = pgTable("oauth_states", {
+	state: text("state").primaryKey(),
+	createdAt: bigint("created_at", { mode: "number" }).notNull(),
+	expiresAt: bigint("expires_at", { mode: "number" }).notNull(),
+});
 
 export const ssoAccounts = pgTable("sso_accounts", {
 	id: uuid().defaultRandom().primaryKey().notNull(),

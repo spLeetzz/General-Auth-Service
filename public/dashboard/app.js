@@ -31,6 +31,10 @@
       headers: {},
       credentials: "same-origin",
     };
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      opts.headers["Authorization"] = `Bearer ${token}`;
+    }
     if (body) {
       opts.headers["Content-Type"] = "application/json";
       opts.body = JSON.stringify(body);
@@ -191,7 +195,7 @@
         )
         .join("");
     } else {
-      container.innerHTML = `<p style="color:var(--text-muted);font-size:.88rem">No SSO providers linked. <a href="/authorize/google" style="color:var(--accent)">Link Google</a></p>`;
+      container.innerHTML = `<p style="color:var(--text-muted);font-size:.88rem">No SSO providers linked. <button type="button" onclick="fetch('/authorize/google/init').then(r=>r.json()).then(d=>window.location.href=d.url)" style="color:var(--accent); background:none; border:none; padding:0; cursor:pointer; font:inherit; text-decoration:underline;">Link Google</button></p>`;
     }
   }
 
@@ -254,8 +258,8 @@
     }
   });
 
-  // ── Logout ───────────────────────────────────────────
   $("#btnLogout").addEventListener("click", async () => {
+    localStorage.removeItem("auth_token");
     try {
       await fetch("/authorize/logout", {
         method: "POST",
