@@ -16,10 +16,8 @@ export const sessionOptions: SessionOptions = {
   rolling: true, // Auto-refresh the 14-day expiry on user activity
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    // Use SESSION_SAMESITE=none for cross-site OAuth iframe/popup cases.
-    sameSite:
-      (process.env.SESSION_SAMESITE as "lax" | "none" | "strict" | undefined) ?? "none",
+    secure: false,
+    sameSite: "lax", // really BAD BAD BAD but i dont have a https domain now and vercel is not helpin on it
     maxAge: 14 * 24 * 60 * 60 * 1000, // 14 daysW
   },
 };
