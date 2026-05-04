@@ -12,8 +12,9 @@ These endpoints are designed to be consumed by web browsers. They handle user au
 | `POST` | `/authorize/login` | Accepts `email` and `password`. Sets session cookie. | No |
 | `GET` | `/authorize/signup` | Renders the HTML signup page. | No |
 | `POST` | `/authorize/signup` | Accepts `firstName`, `lastName`, `email`, `password`. Creates user and sets session. | No |
-| `GET` | `/authorize/google` | Redirects to Google consent screen (SSO). | No |
-| `GET` | `/authorize/google/callback` | Handles Google SSO callback, creates user/link, and sets session. | No |
+| `GET` | `/authorize/google/init` | Returns JSON `{ url }` for Google SSO redirection. | No |
+| `GET` | `/authorize/google/exchange` | Handles Google callback, issues JWT, and redirects to frontend. | No |
+| `GET` | `/auth/success` | Helper page rendered after successful external authentication. | No |
 | `POST` | `/authorize/logout` | Destroys the current user session. | **Session** |
 
 ## 2. OIDC Endpoints (Client Apps)
@@ -26,7 +27,7 @@ These endpoints implement the OpenID Connect (OIDC) specification and are used b
 | `GET` | `/.well-known/jwks.json` | Returns the JSON Web Key Set (public keys for verifying tokens). | No |
 | `GET` | `/authorize` | Starts the authorization code flow. Expects `client_id`, `redirect_uri`, `state`, `code_challenge`. Redirects to login if no active session. | **Session** |
 | `POST` | `/token` | Exchanges an authorization code for tokens. Expects `grant_type`, `code`, `redirect_uri`, `client_id`, `code_verifier`. Can also use Basic Auth (`Authorization: Basic base64(client_id:client_secret)`). | Client Credentials |
-| `GET/POST`| `/userinfo` | Returns the authenticated user's profile information. | **Bearer Token** |
+| `GET` | `/userinfo` | Returns the authenticated user's profile information. | **Bearer Token** |
 | `POST` | `/introspect` | Verifies if a token is active and returns metadata. | Client Credentials |
 | `POST` | `/refresh` | Obtains a new access token using a refresh token. | Client Credentials |
 | `POST` | `/revoke` | Revokes an active token. | Client Credentials |
