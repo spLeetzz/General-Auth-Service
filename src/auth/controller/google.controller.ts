@@ -181,7 +181,23 @@ export async function googleExchange(
       }
     }
 
-    // 4. Issue JWT instead of session
+    // 4. Set session for OIDC flows
+    req.session.userId = userId;
+
+    // 5. Check if we are in the middle of an OIDC login
+    const OAUTH_RESUME_COOKIE = "oauth_resume_path";
+    const rawResume = req.cookies[OAUTH_RESUME_COOKIE];
+    let resumePath = null;
+    if (rawResume && typeof rawResume === "string" && rawResume.trim().startsWith("/authorize?")) {
+      resumePath = rawResume.trim();
+    }
+
+    if (resumePath) {
+      res.clearCookie(OAUTH_RESUME_COOKIE, { path: "/" });
+      return res.redirect(302, resumePath);
+    }
+
+    // 6. Otherwise, it's a direct dashboard login: Issue JWT
     const token = await signAccessToken(
       { sub: userId },
       {
