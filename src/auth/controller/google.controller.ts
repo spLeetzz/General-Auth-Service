@@ -75,6 +75,7 @@ export async function googleCallback(
   next: NextFunction,
 ) {
   try {
+    console.log("cookies received:", req.headers.cookie);
     console.log("callback session:", req.session.googleState, req.sessionID);
     const code = req.query.code;
     const state = req.query.state;
