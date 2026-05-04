@@ -5,6 +5,7 @@ import { db } from "../../db/db.js";
 import { users, ssoAccounts, oauthStates } from "../../db/schema.js";
 import ApiError from "../../utility/api.error.js";
 import { signAccessToken } from "../../keys/jwt.service.js";
+import { createAuthCode } from "../../oauth/services/oauth.service.js";
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -183,16 +184,40 @@ export async function googleExchange(
       }
     }
 
-    // 4. Set session for OIDC flows
-    req.session.userId = userId;
-
-    // 5. Check if we are in the middle of an OIDC login via DB state
+    // 4. Check if we are in the middle of an OIDC login via DB state.
+    // Instead of bouncing through /authorize (which relies on a session cookie
+    // that may race with connect-pg-simple), issue the auth code here and
+    // redirect straight back to the client redirect_uri.
     const resumePath = row.resume;
     if (resumePath && typeof resumePath === "string" && resumePath.trim().startsWith("/authorize?")) {
-      return res.redirect(302, resumePath.trim());
+      const resumeUrl = new URL(resumePath, "http://localhost");
+      const clientId = resumeUrl.searchParams.get("client_id");
+      const redirectUri = resumeUrl.searchParams.get("redirect_uri");
+      const state = resumeUrl.searchParams.get("state");
+      const codeChallenge = resumeUrl.searchParams.get("code_challenge") ?? undefined;
+
+      if (clientId && redirectUri) {
+        const code = await createAuthCode({
+          userId,
+          clientId,
+          redirectUri,
+          ...(codeChallenge ? { codeChallenge } : {}),
+        });
+
+        const redirect = new URL(redirectUri);
+        redirect.searchParams.set("code", code);
+        if (state) redirect.searchParams.set("state", state);
+        return res.redirect(302, redirect.toString());
+      }
     }
 
-    // 6. Otherwise, it's a direct dashboard login: Issue JWT
+    // 5. Otherwise, it's a direct dashboard login: persist session explicitly,
+    // then issue a short-lived JWT and redirect to the success page.
+    await new Promise<void>((resolve, reject) => {
+      (req as any).session.userId = userId;
+      (req as any).session.save((err: Error | null) => (err ? reject(err) : resolve()));
+    });
+
     const token = await signAccessToken(
       { sub: userId },
       {
