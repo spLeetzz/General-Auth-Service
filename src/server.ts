@@ -13,16 +13,16 @@ import ApiError from "./utility/api.error.js";
 
 const app = express();
 
+app.set("trust proxy", 1); // only for vercel
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
-app.set("trust proxy", 1); // only for vercel
+
 app.use(session(sessionOptions));
 app.use(
   ["/authorize/login", "/authorize/signup", "/token", "/refresh"],
   rateLimit({ windowMs: 60_000, max: 20 }),
 );
-app.set("trust proxy", true);
 
 // --- Static landing page ---
 app.get("/", (req, res) => res.redirect("/dashboard"));
