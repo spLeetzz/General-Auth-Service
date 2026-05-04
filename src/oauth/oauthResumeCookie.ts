@@ -21,5 +21,6 @@ export function setOAuthResumeCookie(res: Response, resumePath: string): void {
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
     maxAge: 10 * 60 * 1000,
+    path: "/",
   });
 }
