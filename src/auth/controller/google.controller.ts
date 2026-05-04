@@ -44,11 +44,8 @@ export async function googleRedirect(
       res.redirect(302, "/authorize/login?error=Google+SSO+is+not+configured");
       return;
     }
-
-    // Store a state param in session to prevent CSRF
     const state = randomBytes(16).toString("hex");
     req.session.googleState = state;
-
     const params = new URLSearchParams({
       client_id: config.clientId,
       redirect_uri: config.redirectUri,
@@ -58,8 +55,14 @@ export async function googleRedirect(
       access_type: "online",
       prompt: "select_account",
     });
-
-    res.redirect(302, `${GOOGLE_AUTH_URL}?${params.toString()}`);
+    req.session.save((err) => {
+      if (err) {
+        console.error("session save error:", err);
+        return next(err);
+      }
+      console.log("session saved, state:", state);
+      res.redirect(302, `${GOOGLE_AUTH_URL}?${params.toString()}`);
+    });
   } catch (error) {
     next(error);
   }
@@ -72,6 +75,7 @@ export async function googleCallback(
   next: NextFunction,
 ) {
   try {
+    console.log("callback session:", req.session.googleState, req.sessionID);
     const code = req.query.code;
     const state = req.query.state;
     if (typeof code !== "string" || typeof state !== "string") {
@@ -184,6 +188,7 @@ export async function googleCallback(
     req.session.regenerate((err) => {
       if (err) return next(ApiError.internal("Failed to start session"));
       req.session.userId = userId;
+      console.log("saved sessionID:", req.sessionID, "state:", state);
       redirectAfterAuth(req, res);
     });
   } catch (error) {
