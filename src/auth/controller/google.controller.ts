@@ -34,11 +34,13 @@ export async function googleInit(
       return;
     }
     const state = randomBytes(16).toString("hex");
+    const resume = typeof req.query.resume === "string" ? req.query.resume : null;
 
     await db.insert(oauthStates).values({
       state,
       createdAt: Date.now(),
       expiresAt: Date.now() + 10 * 60 * 1000,
+      resume,
     });
 
     const params = new URLSearchParams({
@@ -184,17 +186,10 @@ export async function googleExchange(
     // 4. Set session for OIDC flows
     req.session.userId = userId;
 
-    // 5. Check if we are in the middle of an OIDC login
-    const OAUTH_RESUME_COOKIE = "oauth_resume_path";
-    const rawResume = req.cookies[OAUTH_RESUME_COOKIE];
-    let resumePath = null;
-    if (rawResume && typeof rawResume === "string" && rawResume.trim().startsWith("/authorize?")) {
-      resumePath = rawResume.trim();
-    }
-
-    if (resumePath) {
-      res.clearCookie(OAUTH_RESUME_COOKIE, { path: "/" });
-      return res.redirect(302, resumePath);
+    // 5. Check if we are in the middle of an OIDC login via DB state
+    const resumePath = row.resume;
+    if (resumePath && typeof resumePath === "string" && resumePath.trim().startsWith("/authorize?")) {
+      return res.redirect(302, resumePath.trim());
     }
 
     // 6. Otherwise, it's a direct dashboard login: Issue JWT

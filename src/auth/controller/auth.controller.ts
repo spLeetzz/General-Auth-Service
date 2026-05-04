@@ -16,31 +16,31 @@ import {
 } from "../views/auth-page.service.js";
 
 function redirectAfterAuth(req: Request, res: Response): void {
-  const resume = normalizeResumePath(req.cookies[OAUTH_RESUME_COOKIE]);
+  const rawResume = (req.query.resume as string) || (req.body.resume as string);
+  const resume = normalizeResumePath(rawResume);
   const target = resume ?? "/dashboard/";
-  clearOAuthResumeCookie(res);
   res.redirect(302, target);
 }
 
 export async function loginPageGet(req: Request, res: Response): Promise<void> {
-  const error =
-    typeof req.query.error === "string" ? req.query.error : undefined;
+  const error = typeof req.query.error === "string" ? req.query.error : undefined;
+  const resume = typeof req.query.resume === "string" ? req.query.resume : undefined;
   res
     .status(200)
     .type("html")
-    .send(await renderLoginPage(error ? { error } : {}));
+    .send(renderLoginPage(error ? (resume ? { error, resume } : { error }) : (resume ? { resume } : {})));
 }
 
 export async function signupPageGet(
   req: Request,
   res: Response,
 ): Promise<void> {
-  const error =
-    typeof req.query.error === "string" ? req.query.error : undefined;
+  const error = typeof req.query.error === "string" ? req.query.error : undefined;
+  const resume = typeof req.query.resume === "string" ? req.query.resume : undefined;
   res
     .status(200)
     .type("html")
-    .send(await renderSignupPage(error ? { error } : {}));
+    .send(renderSignupPage(error ? (resume ? { error, resume } : { error }) : (resume ? { resume } : {})));
 }
 
 export async function login(req: Request, res: Response, next: NextFunction) {
@@ -51,7 +51,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         .status(400)
         .type("html")
         .send(
-          await renderLoginPage({ error: "Invalid email or password format." }),
+          renderLoginPage((typeof req.query.resume === "string" ? { error: "Invalid email or password format.", resume: req.query.resume } : { error: "Invalid email or password format." })),
         );
       return;
     }
@@ -63,7 +63,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       res
         .status(401)
         .type("html")
-        .send(await renderLoginPage({ error: "Invalid credentials." }));
+        .send(renderLoginPage((typeof req.query.resume === "string" ? { error: "Invalid credentials.", resume: req.query.resume } : { error: "Invalid credentials." })));
       return;
     }
     if (!user.passwordHash) {
@@ -71,9 +71,8 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         .status(401)
         .type("html")
         .send(
-          await renderLoginPage({
-            error:
-              "This account dont has a password attached. Please use the 'Sign in with' button below.",
+          renderLoginPage({
+            error: "This account dont has a password attached. Please use the 'Sign in with' button below.",
           }),
         );
       return;
@@ -84,7 +83,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
       res
         .status(401)
         .type("html")
-        .send(await renderLoginPage({ error: "Invalid credentials." }));
+        .send(renderLoginPage((typeof req.query.resume === "string" ? { error: "Invalid credentials.", resume: req.query.resume } : { error: "Invalid credentials." })));
       return;
     }
 
@@ -105,7 +104,7 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
       res
         .status(400)
         .type("html")
-        .send(await renderSignupPage({ error: "Please check all fields." }));
+        .send(renderSignupPage((typeof req.query.resume === "string" ? { error: "Please check all fields.", resume: req.query.resume } : { error: "Please check all fields." })));
       return;
     }
     const [existing] = await db
@@ -116,7 +115,7 @@ export async function signup(req: Request, res: Response, next: NextFunction) {
       res
         .status(409)
         .type("html")
-        .send(await renderSignupPage({ error: "Email already in use." }));
+        .send(renderSignupPage((typeof req.query.resume === "string" ? { error: "Email already in use.", resume: req.query.resume } : { error: "Email already in use." })));
       return;
     }
 

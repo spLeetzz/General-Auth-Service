@@ -21,6 +21,7 @@ export const oauthStates = pgTable("oauth_states", {
 	state: text("state").primaryKey(),
 	createdAt: bigint("created_at", { mode: "number" }).notNull(),
 	expiresAt: bigint("expires_at", { mode: "number" }).notNull(),
+	resume: text("resume"),
 });
 
 export const ssoAccounts = pgTable("sso_accounts", {

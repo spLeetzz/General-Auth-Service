@@ -62,8 +62,7 @@ export async function authorize(req: Request, res: Response, next: NextFunction)
       if (q.code_challenge_method) params.set("code_challenge_method", q.code_challenge_method);
       if (q.state) params.set("state", q.state);
       const resume = `/authorize?${params.toString()}`;
-      setOAuthResumeCookie(res, resume);
-      return res.redirect(302, "/authorize/login");
+      return res.redirect(302, `/authorize/login?resume=${encodeURIComponent(resume)}`);
     }
 
     const code = await oauthService.createAuthCode({
@@ -73,7 +72,6 @@ export async function authorize(req: Request, res: Response, next: NextFunction)
       ...(q.code_challenge ? { codeChallenge: q.code_challenge } : {}),
     });
 
-    clearOAuthResumeCookie(res);
     const redirect = new URL(q.redirect_uri);
     redirect.searchParams.set("code", code);
     if (q.state) redirect.searchParams.set("state", q.state);
