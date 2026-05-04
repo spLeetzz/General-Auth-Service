@@ -19,7 +19,7 @@ export const sessionOptions: SessionOptions = {
     secure: process.env.NODE_ENV === "production",
     // Use SESSION_SAMESITE=none for cross-site OAuth iframe/popup cases.
     sameSite:
-      (process.env.SESSION_SAMESITE as "lax" | "none" | "strict" | undefined) ?? "lax",
-    maxAge: 14 * 24 * 60 * 60 * 1000, // 14 days
+      (process.env.SESSION_SAMESITE as "lax" | "none" | "strict" | undefined) ?? "none",
+    maxAge: 14 * 24 * 60 * 60 * 1000, // 14 daysW
   },
 };
